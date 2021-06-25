@@ -1,0 +1,24 @@
+<!-- Codice di supporto -->
+<script>
+   /**
+    * Modifica metodo della pagina.
+    *
+    * @param tag
+    */
+   whatOperation = (tag) => {
+      // Permette di gestire il cambio metodo da passare da Expressjs:
+      document.querySelector("#_method").value = "";
+      switch(tag.type) {
+         case "button":
+            if(tag.id === "remove") {
+               document.querySelector("#_method").value = "DELETE";
+            }
+            break;
+         default:
+            if(tag.id === "remove" && tag.checked === true) {
+               document.querySelector("#_method").value = "DELETE";
+            }
+            break;
+      }
+   };
+</script>
