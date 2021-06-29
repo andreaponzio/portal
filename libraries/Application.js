@@ -1,27 +1,15 @@
-/**
- * Moduli e istanza oggetti.
- */
 const Base = require("../libraries/Base");
 
-/**
- * Classe Application.
- */
 class Application extends Base {
-   /**
-    * Dichiarazione proprietà private.
-    */
+   // Dichiarazione proprietà private:
    #application = {};
 
-   /**
-    * Costruttore della classe Application.
-    */
+   // Costruttore della classe Application:
    constructor() {
       super();
    };
 
-   /**
-    * Get delle proprietà dell'applicazione.
-    */
+   // Get delle proprietà dell'applicazione:
    get name() {
       return this.#application.name;
    };
@@ -47,9 +35,7 @@ class Application extends Base {
       return this.#application.changed_at;
    };
 
-   /**
-    * Set delle proprietà dell'applicazione.
-    */
+   // Set delle proprietà dell'applicazione:
    set title(value) {
       this.#application.title = value || undefined;
    };
@@ -66,160 +52,91 @@ class Application extends Base {
       this.#application.locked = value || undefined;
    };
 
-   /**
-    * Controllo presenza sulle proprietà obbligatorie.
-    *
-    * @throws c_invalid_property
-    */
    isCorrect() {
       // Verifica proprietà:
       if(this.#application === {})
-         throw this.c_invalid_property;
+         throw this.invalid_property;
 
       if(this.#application.title === undefined || this.#application.description === undefined ||
          this.#application.image === undefined || this.#application.sortid === undefined)
-         throw this.c_invalid_property;
+         throw this.invalid_property;
    };
-
-   /**
-    * Prepara la classe per un nuova applicazione.
-    *
-    * @param name
-    *
-    * @throws c_invalid_property
-    * @throws c_already_exists
-    */
    async new(name) {
       // Inizializza proprietà locali:
       let documents = [];
 
-      // Controlla presenza del nome dell'applicazione:
+      // Verifica chiave del documento:
       if(name === undefined || name.length === 0)
-         throw this.c_invalid_property;
+         throw this.invalid_property;
 
       // Esiste già un'applicazione con questo nome?
       documents = await super._find("applications", { "_id": name });
       if(documents.length !== 0)
-         throw this.c_already_exists;
+         throw this.already_exists;
 
-      // Reimposta l'anagrafica in modo che sia possibile crearne un'altra:
+      // Inizializza documento (da usare anche per il riutilizzo dell'istanza della classe):
       this.#application = {};
       this.#application.type = "application";
       this.#application.name = name;
       this.#application.sortid = 0;
       this.#application.locked = false;
    };
-
-   /**
-    * Legge l'anagrafica dell'applicazione con il nome specificato.
-    *
-    * @param name
-    *
-    * @throws c_invalid_property
-    * @throws ex
-    */
    async load(name) {
       // Inizializza proprietà locali:
       let documents = [];
 
-      // Controllo presenza del nome applicazione:
+      // Verifica chiave del documento:
       if(name === undefined || name.length === 0)
-         throw this.c_invalid_property;
+         throw this.invalid_property;
 
-      // Cerca e legge l'applicazione:
-      try {
+      // Legge dalla collezione il documento:
          documents = await super._load("applications", {"_id": name});
-      }
-      catch(ex) {
-         throw   ex;
-      }
 
       // Valorizza proprietà privata:
       this.#application = documents[0];
    };
-
-   /**
-    * Registra l'applicazione.
-    *
-    * @throws ex
-    */
    async save() {
-      try {
-         // Controlla proprietà:
-         this.isCorrect();
+      // Controlla proprietà:
+      this.isCorrect();
 
-         // Completa proprietà dell'applicazione:
-         if(this.#application.created_at === undefined)
-            this.#application.created_at = new Date().toISOString();
-         else
-            this.#application.changed_at = new Date().toISOString();
+      // Completa proprietà dell'applicazione:
+      if(this.#application.created_at === undefined)
+         this.#application.created_at = new Date().toISOString();
+      else
+         this.#application.changed_at = new Date().toISOString();
 
-         // Registra anagrafica:
-         await super._save("applications", this.#application.name, this.#application);
-      }
-      catch(ex) {
-         throw ex;
-      }
+      // Registra documento:
+      await super._save("applications", this.#application.name, this.#application);
    }
-
-   /**
-    * Elimina o blocca l'applicazione.
-    *
-    * @throws ex
-    *
-    * @param physical_deletion
-    */
    async remove(physical_deletion = false) {
-      try {
-         switch(physical_deletion) {
-            case true:
-               await super._remove("applications", {"_id": this.#application.name});
-               break;
+      // In base al valore del parametro il documento viene semplicemente bloccato oppure cancellato
+      // fisicamente:
+      switch(physical_deletion) {
+         case true:
+            await super._remove("applications", {"_id": this.#application.name});
+            break;
 
-            case false:
-               this.#application.locked = true;
-               await this.save();
-               break;
-         }
-      }
-      catch(ex) {
-         throw ex;
+         case false:
+            this.#application.locked = true;
+            await this.save();
+            break;
       }
    }
-
-   /**
-    * Cerca nelle applicazioni.
-    *
-    * @param filter
-    * @param sort
-    * @param options
-    * @return documents
-    *
-    * @throws c_invalid_property
-    * @throws ex
-    */
    async find(filter = { "type": "application"}, sort = {}, options = {}) {
       // Inizializza proprietà locali:
       let documents = [];
 
       // Controlla presenza del filtro:
       if(filter === undefined || filter.length === 0)
-         throw this.c_invalid_property;
+         throw this.invalid_property;
 
-      // Cerca le applicazioni in base al filtro:
-      try {
-         documents = await super._find("applications", filter, sort, options);
-      }
-      catch(ex) {
-         throw ex;
-      }
-
-      // Restituisce utenti:
+      // Cerca i documenti che rispettano la chiave specificata:
+      documents = await super._find("applications", filter, sort, options);
       return documents;
    }
 }
 
-/**
- * Esporta la classe Application.
- */
+/*&==================================================================================================================*
+ *& Esporta modulo
+ *&=================================================================================================================*/
 module.exports = Application;

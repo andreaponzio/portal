@@ -29,9 +29,14 @@
       <div class="form-group frame-color">
          <div>
             <label for="email" class="fw-bold">Indirizzo e-mail</label>
-            <input class="form-control mt-1" type="email" name="email" id="email" placeholder="nome@example.com"
-                   required value="andrea.ponzio@gmail.com">
-            <div class="invalid-feedback" id="email_feedback"></div>
+            {{#if emailfound}}
+               <input class="form-control mt-1 is-invalid" type="email" name="email" id="email" placeholder="nome@example.com"
+                      required>
+            {{else}}
+               <input class="form-control mt-1" type="email" name="email" id="email" placeholder="nome@example.com"
+                   required>
+            {{/if}}
+            <div class="invalid-feedback" id="email_feedback">{{emailfound}}</div>
          </div>
          <div class="mt-3">
             <label for="name" class="fw-bold">Nome utente</label>
@@ -44,12 +49,12 @@
       <div class="form-group frame-color mt-3">
          <div>
             <label for="password" class="fw-bold">Password</label>
-            <input type="password" class="form-control mt-1" name="password" id="password" maxlength="20" required value="1234567890">
+            <input type="password" class="form-control mt-1" name="password" id="password" maxlength="20" required>
             <div class="invalid-feedback">E' necessario specificare una password (minimo 8 caratteri)</div>
          </div>
          <div class="mt-3">
             <label for="repassword" class="fw-bold">Ripeti password</label>
-            <input type="password" class="form-control mt-1" name="repassword" id="repassword" maxlength="20" required value="1234567890">
+            <input type="password" class="form-control mt-1" name="repassword" id="repassword" maxlength="20" required>
             <div class="invalid-feedback">Le password non corrispondono</div>
          </div>
       </div>
@@ -58,12 +63,12 @@
       <div class="form-group frame-color mt-3">
          <div>
             <label for="security" class="fw-bold">Frase di sicurezza</label>
-            <input type="password" class="form-control mt-1" name="security" id="security" maxlength="30" required value="1234567890">
+            <input type="password" class="form-control mt-1" name="security" id="security" maxlength="30" required>
             <div class="invalid-feedback">E' necessario specificare una frase di sicurezza (minimo 10 car., massimo 30)</div>
          </div>
          <div class="mt-3">
             <label for="resecurity" class="fw-bold">Ripeti frase di sicurezza</label>
-            <input type="password" class="form-control mt-1" name="resecurity" id="resecurity" maxlength="30" required value="1234567890">
+            <input type="password" class="form-control mt-1" name="resecurity" id="resecurity" maxlength="30" required>
             <div class="invalid-feedback">Le frasi di sicurezza non corrispondono</div>
          </div>
       </div>

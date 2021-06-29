@@ -46,7 +46,7 @@
             <div class="form-group form-check">
                <input type="radio" class="form-check-input" name="user" id="reset" onclick="whatOperation(this)"
                       checked>
-               <label class="form-check-label" for="reset">Generare una nuova password</label>
+               <label class="form-check-label" for="reset">Assegna password di default</label>
                <br>
                <input type="radio" class="form-check-input" name="user" id="remove" onclick="whatOperation(this)">
                <label class="form-check-label" for="remove">Cancellare registrazione</label>
@@ -60,6 +60,9 @@
          <a href="/" class="btn btn-warning">Annulla</a>
       </div>
    </form>
+
+   <!-- Eventuali messaggi -->
+   {{> message}}
 </div>
 
 <script src="js/hub/access-problem.js"></script>

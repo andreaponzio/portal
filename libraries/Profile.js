@@ -1,27 +1,15 @@
-/**
- * Moduli e istanza oggetti.
- */
 const Base = require("../libraries/Base");
 
-/**
- * Classe Profile.
- */
 class Profile extends Base {
-   /**
-    * Dichiarazione proprietà private.
-    */
+   // Dichiarazione proprietà private:
    #profile = {};
 
-   /**
-    * Costruttore della classe Profile.
-    */
+   // Costruttore della classe Profile:
    constructor(d) {
       super();
    };
 
-   /**
-    * Get delle proprietà del profilo.
-    */
+   // Get delle proprietà del profilo:
    get name() {
       return this.#profile.name;
    };
@@ -44,9 +32,7 @@ class Profile extends Base {
       return this.#profile.applications;
    };
 
-   /**
-    * Set delle proprietà del profilo.
-    */
+   // Set delle proprietà del profilo:
    set description(value) {
       this.#profile.description = value || undefined;
    };
@@ -57,189 +43,101 @@ class Profile extends Base {
       this.#profile.locked = value || undefined;
    };
 
-   /**
-    * Controllo presenza sulle proprietà obbligatorie.
-    *
-    * @throws c_invalid_property
-    */
    isCorrect() {
       // Verifica proprietà:
       if(this.#profile === {})
-         throw this.c_invalid_property;
+         throw this.invalid_property;
 
       if(this.#profile.description === undefined)
-         throw this.c_invalid_property;
+         throw this.invalid_property;
    };
-
-   /**
-    * Prepara la classe per un nuovo profilo.
-    *
-    * @param name
-    *
-    * @throws c_invalid_property
-    * @throws c_already_exists
-    */
    async new(name) {
       // Inizializza proprietà locali:
       let documents = [];
 
-      // Controlla presenza del nome dell'applicazione:
+      // Verifica chiave del documento:
       if(name === undefined || name.length === 0)
-         throw this.c_invalid_property;
+         throw this.invalid_property;
 
-      // Esiste già un'applicazione con questo nome?
-      documents = await super._find("profiles", { "_id": name });
-      if(documents.length !== 0)
-         throw this.c_already_exists;
-
-      // Reimposta l'anagrafica in modo che sia possibile crearne un'altra:
+      // Inizializza documento (da usare anche per il riutilizzo dell'istanza della classe):
       this.#profile = {};
       this.#profile.type = "profile";
       this.#profile.name = name;
       this.#profile.admin = false;
       this.#profile.locked = false;
    };
-
-   /**
-    * Legge l'anagrafica del profilo con il nome specificato.
-    *
-    * @param name
-    *
-    * @throws c_invalid_property
-    * @throws ex
-    */
    async load(name) {
       // Inizializza proprietà locali:
       let documents = [];
 
-      // Controllo presenza del nome applicazione:
+      // Verifica chiave del documento:
       if(name === undefined || name.length === 0)
-         throw this.c_invalid_property;
+         throw this.invalid_property;
 
-      // Cerca e legge l'applicazione:
-      try {
-         documents = await super._load("profiles", {"_id": name});
-      }
-      catch(ex) {
-         throw ex;
-      }
+      // Legge dalla collezione il documento:
+      documents = await super._load("profiles", {"_id": name});
 
       // Valorizza proprietà privata:
       this.#profile = documents[0];
    };
-
-   /**
-    * Registra il profilo.
-    *
-    * @throws ex
-    */
    async save() {
-      try {
-         // Controlla proprietà:
-         this.isCorrect();
+      // Controlla proprietà:
+      this.isCorrect();
 
-         // Completa proprietà del profilo:
-         if(this.#profile.created_at === undefined)
-            this.#profile.created_at = new Date().toISOString();
-         else
-            this.#profile.changed_at = new Date().toISOString();
+      // Completa proprietà del profilo:
+      if(this.#profile.created_at === undefined)
+         this.#profile.created_at = new Date().toISOString();
+      else
+         this.#profile.changed_at = new Date().toISOString();
 
-         // Registra anagrafica:
-         await super._save("profiles", this.#profile.name, this.#profile);
-      }
-      catch(ex) {
-         throw ex;
-      }
+      // Registra documento:
+      await super._save("profiles", this.#profile.name, this.#profile);
    }
-
-   /**
-    * Elimina o blocca il profilo.
-    *
-    * @param physical_deletion
-    *
-    * @throws ex
-    */
    async remove(physical_deletion = false) {
-      try {
-         switch(physical_deletion) {
-            case true:
-               await super._remove("profiles", {"_id": this.#profile.name});
-               break;
+      // In base al valore del parametro il documento viene semplicemente bloccato oppure cancellato
+      // fisicamente:
+      switch(physical_deletion) {
+         case true:
+            await super._remove("profiles", {"_id": this.#profile.name});
+            break;
 
-            case false:
-               this.#profile.locked = true;
-               await this.save();
-               break;
-         }
-      }
-      catch(ex) {
-         throw ex;
+         case false:
+            this.#profile.locked = true;
+            await this.save();
+            break;
       }
    }
-
-   /**
-    * Cerca nei profili.
-    *
-    * @param filter
-    * @param sort
-    * @param options
-    * @return documents
-    *
-    * @throws c_invalid_property
-    * @throws ex
-    */
    async find(filter = { "type": "profile"}, sort = {}, options = {}) {
       // Inizializza proprietà locali:
       let documents = [];
 
       // Controlla presenza del filtro:
       if(filter === undefined || filter.length === 0)
-         throw this.c_invalid_property;
+         throw this.invalid_property;
 
-      // Cerca le applicazioni in base al filtro:
-      try {
-         documents = await super._find("profiles", filter, sort, options);
-      }
-      catch(ex) {
-         throw ex;
-      }
-
-      // Restituisce utenti:
+      // Cerca i documenti che rispettano la chiave specificata:
+      documents = await super._find("profiles", filter, sort, options);
       return documents;
    }
-
-   /**
-    * Aggiunge un applicazione al profilo.
-    *
-    * @param name
-    *
-    * @throws c_not_found
-    */
    async add(name) {
       // Inizializza proprietà locali:
       let documents = [];
 
-      // Verifica esistenza dell'applicazione da aggiungere:
+      // Per poter aggiungere un'applicazione al profilo, questa deve esistere:
       documents = await super._find("applications", { "_id": name });
       if(documents.length === 0)
-         throw this.c_not_found;
+         throw this.not_found;
 
-      // Aggiunge applicazione all'elenco:
+      // Aggiunge applicazione al profilo:
       if(this.#profile.applications === undefined)
          this.#profile.applications = [];
       this.#profile.applications.push(name);
    };
-
-   /**
-    * Elimina l'applicazione dall'elenco di quelle assegnate al profilo.
-    *
-    * @param name
-    */
    del(name) {
       // Inizializza proprietà locali:
       let index = -1;
 
-      // Elimina l'applicazione dall'elenco:
+      // Elimina l'applicazione dal profilo:
       if(this.#profile.applications !== undefined) {
          index = this.#profile.applications.indexOf(name);
          if(index !== -1)
@@ -248,7 +146,7 @@ class Profile extends Base {
    };
 }
 
-/**
- * Esporta la classe Profile.
- */
+/*&==================================================================================================================*
+ *& Esporta modulo
+ *&=================================================================================================================*/
 module.exports = Profile;
