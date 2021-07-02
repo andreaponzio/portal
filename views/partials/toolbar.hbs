@@ -16,7 +16,7 @@
                      <path fill-rule="evenodd"
                            d="M8 11a3 3 0 1 0 0-6 3 3 0 0 0 0 6zM6 2.5a.5.5 0 0 1 .5-.5h3a.5.5 0 0 1 0 1h-3a.5.5 0 0 1-.5-.5z" />
                   </svg>
-                  {{session.userdata.name}}
+                  {{session.userdata.username}}
                   {{#if session.userdata.unread}}
                      <span class="badge bg-success">{{session.userdata.unread}}</span>
                   {{/if}}
@@ -33,7 +33,7 @@
                      </a>
                   </li>
                   <li>
-                     <a class="dropdown-item" href="/communic">
+                     <a class="dropdown-item" href="/chat">
                         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
                              class="bi bi-chat-left-text" viewBox="0 0 16 16">
                            <path

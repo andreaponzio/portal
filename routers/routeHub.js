@@ -1,9 +1,10 @@
 const express = require("express");
 const crypto = require("bcrypt");
 const User = require("../libraries/User");
+const Profile = require("../libraries/Profile");
 const Chat = require("../libraries/Chat");
 
-const config = require("../public/config.json");
+const config = require("../public/config.json").database;
 
 const router = express.Router();
 
@@ -23,6 +24,78 @@ router.get("/", async(request, response) => {
 /*&==================================================================================================================*
  *&
  *&=================================================================================================================*/
+router.post("/login", async(request, response) => {
+   // Inizializza proprietà locali:
+   let user = undefined;
+   let profile = undefined;
+   let sessionid = 0;
+
+   // Verifica che la password inserita sia corretta, e se tutto corrisponde imposta sessione di autenticazione:
+   try {
+      user = new User();
+      await user.open(config.dbname, config.address, config.port);
+      await user.load(request.body.email);
+      if(crypto.compareSync(request.body.password, user.password)) {
+
+         // Genera id di sessione:
+         sessionid = await user._getIntervalNextNumber("users", "session-counter");
+
+         // Valorizza dati utente nella sessione:
+         profile = new Profile(user.database);
+         await profile.load(user.profile);
+         request.session.userdata = {
+            "userid": user.id,
+            "email": user.email,
+            "username": user.name,
+            "profile": user.profile,
+            "admin": profile.admin,
+            "sessionid": sessionid
+         };
+
+         // Determina quanti messaggi sono ancora da leggere:
+         request.session.userdata.unread = await user._count("chats", { "notif": request.session.userdata.email });
+
+         // Scrive sessione e render della pagina principale dell'HUB:
+         await user._openSession(sessionid, user.id);
+         response.redirect("/");
+      }
+      else {
+         request.flash("alert-danger", "Impossibile autenticare");
+         response.redirect("/");
+      }
+   }
+   catch(ex) {
+      response.send(ex);
+   }
+   finally {
+      await user.close();
+      profile = undefined;
+      user =undefined;
+   }
+});
+router.get("/logoff", async(request, response) => {
+   // Inizializza proprietà locali:
+   let user = new User();
+
+   // Chiude la connessione:
+   try {
+      await user.open(config.dbname, config.address, config.port);
+      await user._closeSession(request.session.userdata.sessionid);
+      delete request.session.userdata;
+      response.redirect("/");
+   }
+   catch(ex) {
+      response.send(ex);
+   }
+   finally {
+      await user.close();
+      user = undefined;
+   }
+});
+
+/*&==================================================================================================================*
+ *&
+ *&=================================================================================================================*/
 router.get("/registration", async(request, response) => {
    // Render della pagina di registrazione:
    response.render("hub/registration", {
@@ -37,7 +110,7 @@ router.post("/registration", async(request, response) => {
 
    try {
       // Verifica che l'indirizzo e-mail non sia già registrato:
-      await user.open(config.database.dbname, config.database.address, config.database.port);
+      await user.open(config.dbname, config.address, config.port);
       documents = await user.find({ "_id": request.body.email });
       if(documents.length !== 0) {
          request.flash("emailfound", "L'indirizzo e-mail è già registrato");
@@ -63,6 +136,7 @@ router.post("/registration", async(request, response) => {
    }
    finally {
       await user.close();
+      user = undefined;
    }
 });
 
@@ -83,7 +157,7 @@ router.post("/access-problem", async(request, response) => {
 
    // Permette di impostare la password di default:
    try {
-      await user.open(config.database.dbname, config.database.address, config.database.port);
+      await user.open(config.dbname, config.address, config.port);
       await user.load(request.body.email);
 
       // Verifica la frase di sicurezza e se verificata imposta password di default:
@@ -104,6 +178,7 @@ router.post("/access-problem", async(request, response) => {
    }
    finally {
       await user.close();
+      user = undefined;
    }
 });
 router.delete("/access-problem", async(request, response) => {
@@ -112,7 +187,7 @@ router.delete("/access-problem", async(request, response) => {
 
    // Permette di impostare la password di default:
    try {
-      await user.open(config.database.dbname, config.database.address, config.database.port);
+      await user.open(config.dbname, config.address, config.port);
       await user.load(request.body.email);
 
       // Verifica la frase di sicurezza e se verificata blocca la registrazione:
@@ -126,6 +201,10 @@ router.delete("/access-problem", async(request, response) => {
    catch(ex) {
       request.flash("alert-danger", "Impossibile completare la richiesta");
       response.redirect("/access-problem");
+   }
+   finally {
+      await user.close();
+      user = undefined;
    }
 });
 
@@ -142,11 +221,12 @@ router.post("/communic-external", async(request, response) => {
 
    // Permette di inviare una comunicazione all'amministratore:
    try {
-      await chat.open(config.database.dbname, config.database.address, config.database.port);
-      chat.new(request.body.data.substr(1, 20));
+      await chat.open(config.dbname, config.address, config.port);
+      chat.new(request.body.data.substr(0, 15));
       chat.addOwner(request.body.email);
       chat.addOwner("admin@localhost");
       chat.add(request.body.email, request.body.data);
+      chat.external = true;
       await chat.save();
 
       request.flash("alert-success", `Messaggio inviato (#${chat.id})`);
@@ -157,6 +237,7 @@ router.post("/communic-external", async(request, response) => {
    }
    finally {
       await chat.close();
+      chat = undefined;
    }
 });
 

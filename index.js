@@ -7,6 +7,8 @@ const flash = require("connect-flash");
 
 const middleware = require("./middleware");
 const routeHub = require("./routers/routeHub");
+const routeSetup = require("./routers/routeSetup");
+const routeChat = require("./routers/routeChat");
 
 const port = require("./public/config.json").server.port;
 
@@ -59,6 +61,8 @@ app.all("*", function(request, response, next) {
  *& Portale dell'Utente
  *&=================================================================================================================*/
 app.use("/", middleware.Authentication, routeHub);
+app.use("/setup", middleware.Authentication, routeSetup);
+app.use("/chat", middleware.Authentication, routeChat);
 
 /*&==================================================================================================================*
  *& Avvia il server

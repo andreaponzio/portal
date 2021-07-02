@@ -5,13 +5,13 @@ class User extends Base {
    #user = {};
 
    // Costruttore della classe User:
-   constructor() {
-      super();
+   constructor(database = undefined) {
+      super(database);
    };
 
    // Get delle proprietà dell'utente:
    get email() {
-      return this.#user.email;
+      return this.#user._id;
    };
    get name() {
       return this.#user.name;
@@ -55,6 +55,7 @@ class User extends Base {
       this.#user.locked = value || undefined;
    };
 
+   // Metodi:
    isCorrect() {
       // Verifica proprietà:
       if(this.#user === {})
@@ -72,12 +73,16 @@ class User extends Base {
       if(email === undefined || email.length === 0)
          throw this.invalid_property;
 
+      // L'indirizzo e-mail è già registrato?
+      documents = await super._find("users", { "_id": email });
+      if(documents.length !== 0)
+         throw this.already_exists;
+
       // Inizializza documento (da usare anche per il riutilizzo dell'istanza della classe):
       this.#user = {};
       this.#user.type = "user";
-      this.#user.email = email;
+      this.#user._id = email;
       this.#user.locked = false;
-      this.#user.created_at = new Date().toISOString();
    };
    async load(email) {
       // Inizializza proprietà locali:
@@ -89,6 +94,8 @@ class User extends Base {
 
       // Legge dalla collezione il documento:
       documents = await super._load("users", {"_id": email});
+      if(documents.length === 0)
+         throw this.not_found;
 
       // Valorizza proprietà privata:
       this.#user = documents[0];
@@ -98,13 +105,15 @@ class User extends Base {
       this.isCorrect();
 
       // Genera identificativo da assegna alla chiave del documento:
-      if(this.#user.id === undefined)
+      if(this.#user.id === undefined) {
          this.#user.id = await super._getIntervalNextNumber("users");
+         this.#user.created_at = new Date();
+      }
       else
-         this.#user.changed_at = new Date().toISOString();
+         this.#user.changed_at = new Date();
 
       // Registra documento:
-      await super._save("users", this.#user.email, this.#user);
+      await super._save("users", this.#user._id, this.#user);
    }
    async remove(physical_deletion = false) {
       // In base al valore del parametro il documento viene semplicemente bloccato oppure cancellato

@@ -13,59 +13,62 @@ class Base {
    already_exists = "already exists";
 
    // Dichiarazione proprietà private:
-   #dbname = undefined;
-   #server = undefined;
-   #port = undefined;
-   #client = undefined;
+   #database = {};
 
-   constructor(client = undefined) {
-      // Permette di riutilizzare un client, quindi non è necessario effettuare la chiamata
-      // al metodo open:
-      if(client !== undefined)
-         this.#client = client;
+   // Get delle proprietà della connessione:
+   get database() {
+      return this.#database;
+   };
+
+   // Metodi:
+   constructor(database = undefined) {
+      if(database !== undefined) {
+         this.#database = {
+            "dbname": database.dbname,
+            "server": database.server,
+            "port": database.port,
+            "client": database.client
+         };
+      }
    };
    async open(dbname = undefined, server = undefined, port = undefined) {
       // Vengono verificati i parametri di connessione e, se non è stato specificato il riutilizzo di
-      // un client, ne crea una nuova istanza:
-      if(this.#client === undefined) {
+      // un client, crea una nuova istanza:
+      if(dbname === undefined || dbname.length === 0)
+         throw this.dbname_invalid;
 
-         // Controlla parametri:
-         if(dbname === undefined || dbname.length === 0)
-            throw this.dbname_invalid;
+      if(server === undefined || server.length === 0)
+         throw this.server_invalid;
 
-         if(server === undefined || server.length === 0)
-            throw this.server_invalid;
+      if(port === 0 || port > 65535)
+         throw this.port_invalid;
 
-         if(port === 0 || port > 65535)
-            throw this.port_invalid;
+      // Inizializza proprietà private:
+      this.#database = {
+         "dbname": dbname,
+         "server": server,
+         "port": port
+      };
 
-         // Inizializza proprietà private:
-         this.#dbname = dbname;
-         this.#server = server;
-         this.#port = port;
+      // Apre client:
+      this.#database.client = new mongoDrive(`mongodb://${this.#database.server}:${this.#database.port}\\`, {
+         useNewUrlParser: true,
+         useUnifiedTopology: true,
+      });
 
-         // Apre client:
-         this.#client = new mongoDrive(`mongodb://${this.#server}:${this.#port}\\`, {
-            useNewUrlParser: true,
-            useUnifiedTopology: true,
-         });
-
-         // Effettua la connessione:
-         await this.#client.connect();
-      }
+      // Effettua la connessione:
+      await this.#database.client.connect();
    };
    async close() {
       // Chiude la connessione che non sarà più possibile utilizzare (tenere in considerazione l'eventuale
       // condivisione dell'oggetto client):
-      await this.#client.close();
-      this.#client = undefined;
-   };
-   get client() {
-      return this.#client;
+      await this.#database.client.close();
+      this.#database.client = undefined;
+      this.#database = {};
    };
    async _load(collection, key) {
       // Inizializza proprietà locali:
-      let document = undefined;
+      let document = [];
 
       // Controllo parametri:
       if(collection === undefined || collection.length === 0)
@@ -94,7 +97,7 @@ class Base {
          throw this.document_invalid;
 
       // Inserisce o aggiorna documento:
-      await this.#client.db(this.#dbname).collection(collection).findOneAndUpdate(
+      await this.#database.client.db(this.#database.dbname).collection(collection).findOneAndUpdate(
          { "_id": key },
          { "$set": document },
          { "upsert": true, "returnDocument": "after" }
@@ -102,7 +105,7 @@ class Base {
    };
    async _remove(collection, filter = { }) {
       // Elimina i documenti che rispondono alla chiave specificata:
-      await this.#client.db(this.#dbname).collection(collection).deleteMany(filter);
+      await this.#database.client.db(this.#database.dbname).collection(collection).deleteMany(filter);
    };
    async _find(collection, filter = {}, sort = {}, options = {}) {
       // Inizializza proprietà locali:
@@ -110,7 +113,7 @@ class Base {
       let documents = [];
 
       // Cerca il documento con la chiave specificata:
-      cursor = await this.#client.db(this.#dbname).collection(collection).find(filter, options).sort(sort);
+      cursor = await this.#database.client.db(this.#database.dbname).collection(collection).find(filter, options).sort(sort);
 
       // Restituisce sempre un'array con i documenti trovati:
       await cursor.forEach(document => {
@@ -126,7 +129,7 @@ class Base {
 
       // Incrementa il contatore presente nella collezione specificata. Il contatore è contenuto nel
       // documento con chiave "counter":
-      await this.#client.db(this.#dbname).collection(collection).findOneAndUpdate(
+      await this.#database.client.db(this.#database.dbname).collection(collection).findOneAndUpdate(
          { "_id": name},
          { "$inc": { "value": 1 } },
          { "upsert": true, "returnDocument": "after" }
@@ -136,6 +139,48 @@ class Base {
 
       // Restituisce nuovo contatore:
       return id;
+   };
+   async _count(collection, filter) {
+      // Effettua conteggio in base al filtro:
+      return await this.#database.client.db(this.#database.dbname).collection(collection).countDocuments(filter);
+   };
+   async _openSession(sessionid, userid) {
+      // Inizializza proprietà locali:
+      let session = {};
+      
+      // Se non è specificato un id, non genera nulla:
+      if(sessionid !== undefined && sessionid !== 0 &&
+         userid !== undefined && userid !== 0) {
+         session = {
+            "_id": sessionid,
+            "type": "session",
+            "userid": userid,
+            "created_at": new Date().toISOString()
+         };
+         await this.#database.client.db(this.#database.dbname).collection("users").findOneAndUpdate(
+            { "_id": sessionid },
+            { "$set": session },
+            { "upsert": true }
+         );
+      }
+   };
+   async _closeSession(id) {
+      // Inizializza proprietà locali:
+      let documents = [];
+      let session = {};
+
+      // Legge la sessione che si vuole chiudere:
+      if(id !== undefined && id !== 0) {
+         documents = await this._find("users", { "_id": id, "type": "session" });
+         if(documents.length === 1) {
+            session = documents[0];
+            session.closed_at = new Date().toISOString();
+            await this.#database.client.db(this.#database.dbname).collection("users").findOneAndUpdate(
+               { "_id": id },
+               { "$set": session }
+            );
+         }
+      }
    };
 }
 

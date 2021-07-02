@@ -5,8 +5,8 @@ class Profile extends Base {
    #profile = {};
 
    // Costruttore della classe Profile:
-   constructor(d) {
-      super();
+   constructor(database = undefined) {
+      super(database);
    };
 
    // Get delle proprietà del profilo:
@@ -43,6 +43,7 @@ class Profile extends Base {
       this.#profile.locked = value || undefined;
    };
 
+   // Metodi:
    isCorrect() {
       // Verifica proprietà:
       if(this.#profile === {})
@@ -57,7 +58,12 @@ class Profile extends Base {
 
       // Verifica chiave del documento:
       if(name === undefined || name.length === 0)
-         throw this.invalid_property;
+         throw this.already_exists;
+
+      // Il profilo è già presente?
+      documents = await super._find("profiles", { "_id": name });
+      if(documents.length !== 0)
+         throw this.document_key_invalid;
 
       // Inizializza documento (da usare anche per il riutilizzo dell'istanza della classe):
       this.#profile = {};
@@ -76,6 +82,8 @@ class Profile extends Base {
 
       // Legge dalla collezione il documento:
       documents = await super._load("profiles", {"_id": name});
+      if(documents.length === 0)
+         throw this.not_found;
 
       // Valorizza proprietà privata:
       this.#profile = documents[0];
@@ -86,9 +94,9 @@ class Profile extends Base {
 
       // Completa proprietà del profilo:
       if(this.#profile.created_at === undefined)
-         this.#profile.created_at = new Date().toISOString();
+         this.#profile.created_at = new Date();
       else
-         this.#profile.changed_at = new Date().toISOString();
+         this.#profile.changed_at = new Date();
 
       // Registra documento:
       await super._save("profiles", this.#profile.name, this.#profile);
@@ -131,7 +139,7 @@ class Profile extends Base {
       // Aggiunge applicazione al profilo:
       if(this.#profile.applications === undefined)
          this.#profile.applications = [];
-      this.#profile.applications.push(name);
+      this.#profile.applications.push({ "name": name });
    };
    del(name) {
       // Inizializza proprietà locali:

@@ -5,8 +5,8 @@ class Chat extends Base {
    #chat = {};
 
    // Costruttore della classe Chat:
-   constructor() {
-      super();
+   constructor(database = undefined) {
+      super(database);
    };
 
    // Get delle proprietà della chat:
@@ -18,9 +18,6 @@ class Chat extends Base {
    };
    get locked() {
       return this.#chat.locked;
-   };
-   get closed() {
-      return this.#chat.closed;
    };
    get external() {
       return this.#chat.external;
@@ -36,13 +33,11 @@ class Chat extends Base {
    set locked(value) {
       this.#chat.locked = value || undefined;
    };
-   set closed(value) {
-      this.#chat.closed = value || undefined;
-   };
    set external(value) {
       this.#chat.external = value || undefined;
    };
 
+   // Metodi:
    isCorrect() {
       // Verifica proprietà:
       if(this.#chat.owner === undefined || this.#chat.owner.length < 2)
@@ -59,7 +54,6 @@ class Chat extends Base {
       this.#chat.title = title;
       this.#chat.external = external;
       this.#chat.locked = false;
-      this.#chat.created_at = new Date().toISOString();
    };
    async load(id) {
       // Inizializza proprietà locali:
@@ -71,6 +65,8 @@ class Chat extends Base {
 
       // Legge dalla collezione il documento:
       documents = await super._load("chats", {"_id": id});
+      if(documents.length === 0)
+         throw this.not_found;
 
       // Valorizza proprietà privata:
       this.#chat = documents[0];
@@ -80,8 +76,10 @@ class Chat extends Base {
       this.isCorrect();
 
       // Genera identificativo da assegna alla chiave del documento:
-      if(this.#chat._id === undefined)
+      if(this.#chat._id === undefined) {
          this.#chat._id = await super._getIntervalNextNumber("chats");
+         this.#chat.created_at = new Date();
+      }
       else
          this.#chat.changed_at = new Date().toISOString();
 
@@ -89,9 +87,11 @@ class Chat extends Base {
       await super._save("chats", this.#chat._id, this.#chat);
    };
    addOwner(email) {
-      // Aggiunge partecipante alla chat:
-      if(this.#chat.owner === undefined)
+      // Aggiunge partecipante alla chat. Il primo partecipante è anche colui che l'ha creata:
+      if(this.#chat.owner === undefined) {
          this.#chat.owner = [];
+         this.#chat.created_by = email;
+      }
       this.#chat.owner.push(email);
    };
    add(email, content) {
@@ -107,7 +107,7 @@ class Chat extends Base {
       this.#chat.messages.push({
          "owner": email,
          "content": content,
-         "created_at": new Date().toISOString()
+         "created_at": new Date()
       });
 
       // Aggiunge notifica di lettura:
@@ -134,6 +134,18 @@ class Chat extends Base {
             this.#chat.notif.splice(index, 1);
       }
    };
+   async find(filter = { "type": "chat"}, sort = {}, options = {}) {
+      // Inizializza proprietà locali:
+      let documents = [];
+
+      // Controlla presenza del filtro:
+      if(filter === undefined || filter.length === 0)
+         throw this.invalid_property;
+
+      // Cerca i documenti che rispettano la chiave specificata:
+      documents = await super._find("chats", filter, sort, options);
+      return documents;
+   }
 }
 
 /*&==================================================================================================================*

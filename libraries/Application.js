@@ -5,8 +5,8 @@ class Application extends Base {
    #application = {};
 
    // Costruttore della classe Application:
-   constructor() {
-      super();
+   constructor(database = undefined) {
+      super(database);
    };
 
    // Get delle proprietà dell'applicazione:
@@ -52,6 +52,7 @@ class Application extends Base {
       this.#application.locked = value || undefined;
    };
 
+   // Metodi:
    isCorrect() {
       // Verifica proprietà:
       if(this.#application === {})
@@ -90,7 +91,9 @@ class Application extends Base {
          throw this.invalid_property;
 
       // Legge dalla collezione il documento:
-         documents = await super._load("applications", {"_id": name});
+      documents = await super._load("applications", {"_id": name});
+      if(documents.length === 0)
+         throw this.not_found;
 
       // Valorizza proprietà privata:
       this.#application = documents[0];
@@ -101,9 +104,9 @@ class Application extends Base {
 
       // Completa proprietà dell'applicazione:
       if(this.#application.created_at === undefined)
-         this.#application.created_at = new Date().toISOString();
+         this.#application.created_at = new Date();
       else
-         this.#application.changed_at = new Date().toISOString();
+         this.#application.changed_at = new Date();
 
       // Registra documento:
       await super._save("applications", this.#application.name, this.#application);
