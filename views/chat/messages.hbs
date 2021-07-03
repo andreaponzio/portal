@@ -1,0 +1,55 @@
+<style>
+   .flex-container {
+      display: flex;
+      flex-flow: row wrap;
+      margin-top: 6rem;
+   }
+</style>
+
+<div class="container flex-container justify-content-center">
+   <ul class="list-group">
+
+      <!-- Spazio per risposta -->
+      <form class="form-generic" id="submit" method="post" action="/chat/reply">
+         <input type="text" name="_id" id="_id" value="{{data.id}}" hidden>
+         <div class="col">
+            <label for="data" class="form-label"><strong>Risposta</strong></label>
+            <textarea class="form-control" id="data" name="data" rows="3" maxlength="1000" required></textarea>
+         </div>
+         <div class="row text-end p-1">
+            <div class="col">
+            <button type="submit" class="btn btn-primary">Invia</button>
+            </div>
+         </div>
+      </form>
+
+      <!-- Storico dei messaggi -->
+      {{#each data.messages}}
+         {{#compare this.owner '==' ../session.userdata.email}}
+            <li class="list-group-item list-group-item-info">
+               <div class="row">
+                  <div class="col-8">
+                     <strong>Da:</strong> {{this.owner}}
+                  </div>
+                  <div class="col-4 mt-1">
+                     <strong>il:</strong> {{this.created_at}}
+                  </div>
+                  <p class="mb-1">{{this.content}}</p>
+               </div>
+            </li>
+         {{else}}
+            <li class="list-group-item">
+               <div class="row">
+                  <div class="col-8">
+                     <strong>Da:</strong> {{this.owner}}
+                  </div>
+                  <div class="col-4 mt-1">
+                     <strong>il:</strong> {{this.created_at}}
+                  </div>
+                  <p class="mb-1"><em>{{this.content}}</em></p>
+               </div>
+            </li>
+         {{/compare}}
+      {{/each}}
+   </ul>
+</div>

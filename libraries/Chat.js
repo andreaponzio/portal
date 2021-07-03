@@ -28,6 +28,12 @@ class Chat extends Base {
    get changed_at() {
       return this.#chat.changed_at;
    };
+   get created_by() {
+      return this.#chat.created_by;
+   };
+   get messages() {
+      return this.#chat.messages;
+   };
 
    // Set delle proprietà della chat:
    set locked(value) {
@@ -94,7 +100,7 @@ class Chat extends Base {
       }
       this.#chat.owner.push(email);
    };
-   add(email, content) {
+   add(email, content, top = true) {
       // L'indirizzo email è presente nella chat?
       if(this.#chat.owner.indexOf(email) === -1)
          throw this.invalid_property;
@@ -104,11 +110,24 @@ class Chat extends Base {
       // Aggiunge messaggio alla chat:
       if(this.#chat.messages === undefined)
          this.#chat.messages = [];
-      this.#chat.messages.push({
-         "owner": email,
-         "content": content,
-         "created_at": new Date()
-      });
+
+      switch(top) {
+         case false:
+            this.#chat.messages.push({
+               "owner": email,
+               "content": content,
+               "created_at": new Date()
+            });
+            break;
+
+         case true:
+            this.#chat.messages.unshift({
+               "owner": email,
+               "content": content,
+               "created_at": new Date()
+            });
+            break;
+      }
 
       // Aggiunge notifica di lettura:
       this.addNotif(email);

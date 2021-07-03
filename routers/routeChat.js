@@ -23,7 +23,7 @@ router.get("/", async(request, response) => {
 
       // Chat usata per permetterne la creazione di una nuova:
       data.push({
-         "_id": "new",
+         "id": "new",
          "title": "Nuova chat",
          "body": "Permette la creazione di una nuova chat",
          "locked": false,
@@ -34,7 +34,7 @@ router.get("/", async(request, response) => {
       // Chat disponibili:
       documents.forEach(record => {
             data.push({
-               "_id": record._id,
+               "id": record._id,
                "title": record.title.substr(0, 15),
                "body": record.messages[0].content.substr(0, 59),
                "locked": record.locked,
@@ -54,7 +54,8 @@ router.get("/", async(request, response) => {
    // Render della pagina della chat:
    response.render("chat/entry", {
       "title": "Comunicazioni",
-      "data": data
+      "data": data,
+      "alert-success": request.flash("alert-success")
    });
 });
 router.get("/new", async(request, response) => {
@@ -121,6 +122,122 @@ router.post("/new", async(request, response) => {
 
    // Redirect della pagina della chat:
    response.redirect("/chat");
+});
+
+/*&==================================================================================================================*
+ *&
+ *&=================================================================================================================*/
+router.post("/fastReply", async(request, response) => {
+   // Inizializza proprietà locali:
+   let chat = undefined;
+   let id = undefined;
+
+   // Determina l'identificativo della chat sulla quale aggiungere una risposta:
+   id = parseInt(request.body._id.substr(1));
+
+   // Aggiunge risposta:
+   try {
+      chat = new Chat();
+      await chat.open(config.dbname, config.address, config.port);
+      await chat.load(id);
+      chat.add(request.session.userdata.email, request.body.data);
+      await chat.save();
+   }
+   catch(ex) {
+      response.send(ex);
+   }
+   finally {
+      await chat.close();
+      chat = undefined;
+   }
+
+   // Redirect della pagina della chat:
+   request.flash("alert-success", "Risposta inviata");
+   response.redirect("/chat");
+});
+
+/*&==================================================================================================================*
+ *&
+ *&=================================================================================================================*/
+router.get("/open", async(request, response) => {
+   // Inizializza proprietà locali:
+   let chat = undefined;
+   let messages = [];
+   let data = {};
+
+   // Visualizza chat:
+   try {
+      chat = new Chat();
+      await chat.open(config.dbname, config.address, config.port);
+      await chat.load(parseInt(request.query.id));
+
+      // Sistema in un formato più compatto la data dei messaggi:
+      chat.messages.forEach(msg => {
+         messages.push({
+            "owner": msg.owner,
+            "content": msg.content,
+            "created_at": msg.created_at.toLocaleString()
+         });
+      });
+
+      // Prepara chat da visualizzare:
+      data = {
+         "id": chat.id,
+         "title": `Chat - ${chat.title}`,
+         "created_at": chat.created_at.toLocaleString(),
+         "changed_at": chat.changed_at.toLocaleString(),
+         "created_by": chat.created_by,
+         "external": chat.external,
+         "locked": chat.locked,
+         "messages": messages
+      };
+   }
+   catch(ex) {
+      response.send(ex);
+   }
+   finally {
+      await chat.close();
+      chat = undefined;
+   }
+
+   // Render della pagina del contenuto chat:
+   response.render("chat/messages", {
+      "title": data.title,
+      "data": data
+   });
+});
+router.post("/reply", async(request, response) => {
+   // Inizializza proprietà locali:
+   let chat = undefined;
+
+   // Aggiunge risposta:
+   try {
+      chat = new Chat();
+      await chat.open(config.dbname, config.address, config.port);
+      await chat.load(parseInt(request.body._id));
+      chat.add(request.session.userdata.email, request.body.data);
+      await chat.save();
+   }
+   catch(ex) {
+      response.send(ex);
+   }
+   finally {
+      await chat.close();
+      chat =undefined;
+   }
+
+   // Reinderizza sulla pagina principale della chat:
+   response.redirect("/chat");
+});
+
+/*&==================================================================================================================*
+ *&
+ *&=================================================================================================================*/
+router.get("/lock", async(request, response) => {
+
+});
+router.get("/unlock", async(request, response) => {
+
 });
 
 /*&==================================================================================================================*

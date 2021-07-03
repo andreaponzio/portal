@@ -2,7 +2,7 @@
 * | Description:
 * +------------------------------------------------------------------------------------------------*/
 document.querySelector("#next").addEventListener("click", (event) => {
-   // Dichiarazione riferimenti:
+   // Inizializza proprietà locali:
    let regex = /^([a-zA-Z0-9_\.\-\+])+\@(([a-zA-Z0-9\-])+\.)+([a-zA-Z0-9]{2,4})+$/;
    let email = document.querySelector("#email");
    let email_feedback = document.querySelector("#email_feedback");

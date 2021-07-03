@@ -2,7 +2,7 @@
  *&
  *&=================================================================================================================*/
 document.querySelector("#next").addEventListener("click", (event) => {
-   // Dichiarazione riferimenti:
+   // Inizializza proprietà locali:
    let email = document.querySelector("#email");
    let password = document.querySelector("#password");
    let error = 0;
