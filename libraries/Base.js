@@ -62,7 +62,9 @@ class Base {
    async close() {
       // Chiude la connessione che non sarà più possibile utilizzare (tenere in considerazione l'eventuale
       // condivisione dell'oggetto client):
-      await this.#database.client.close();
+      if(this.#database.client !== undefined) {
+         await this.#database.client.close();
+      }
       this.#database.client = undefined;
       this.#database = {};
    };
@@ -157,7 +159,7 @@ class Base {
             "userid": userid,
             "created_at": new Date().toISOString()
          };
-         await this.#database.client.db(this.#database.dbname).collection("users").findOneAndUpdate(
+         await this.#database.client.db(this.#database.dbname).collection("trace").findOneAndUpdate(
             { "_id": sessionid },
             { "$set": session },
             { "upsert": true }
@@ -171,11 +173,11 @@ class Base {
 
       // Legge la sessione che si vuole chiudere:
       if(id !== undefined && id !== 0) {
-         documents = await this._find("users", { "_id": id, "type": "session" });
+         documents = await this._find("trace", { "_id": id, "type": "session" });
          if(documents.length === 1) {
             session = documents[0];
             session.closed_at = new Date().toISOString();
-            await this.#database.client.db(this.#database.dbname).collection("users").findOneAndUpdate(
+            await this.#database.client.db(this.#database.dbname).collection("trace").findOneAndUpdate(
                { "_id": id },
                { "$set": session }
             );

@@ -18,8 +18,12 @@ class Init {
 
          await application.new("user_not_completed");
          application.title = "Completa la registrazione";
-         application.description = "Per poter usere il Portale è necessario completare la registrazione";
-         application.image = "TBD";
+         application.description = "E' necessario completare la registrazione";
+         await application.save();
+
+         await application.new("administrator");
+         application.title = "Amministrazione";
+         application.description = "Permette di amministrare il Portale dell'Utente";
          await application.save();
 
          await application.close();
@@ -43,6 +47,7 @@ class Init {
          await profile.new("administrator");
          profile.description = "Profilo di amministrazione";
          profile.admin = true;
+         await profile.add("administrator");
          await profile.save();
 
          await profile.close();

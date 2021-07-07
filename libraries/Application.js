@@ -58,8 +58,9 @@ class Application extends Base {
       if(this.#application === {})
          throw this.invalid_property;
 
-      if(this.#application.title === undefined || this.#application.description === undefined ||
-         this.#application.image === undefined || this.#application.sortid === undefined)
+      if(this.#application.title === undefined ||
+         this.#application.description === undefined ||
+         this.#application.sortid === undefined)
          throw this.invalid_property;
    };
    async new(name) {

@@ -37,7 +37,7 @@ class Profile extends Base {
       this.#profile.description = value || undefined;
    };
    set admin(value) {
-      this.#profile.image = value || undefined;
+      this.#profile.admin = value || undefined;
    };
    set locked(value) {
       this.#profile.locked = value || undefined;
@@ -139,7 +139,9 @@ class Profile extends Base {
       // Aggiunge applicazione al profilo:
       if(this.#profile.applications === undefined)
          this.#profile.applications = [];
-      this.#profile.applications.push({ "name": name });
+      this.#profile.applications.push({
+         "name": documents[0].name
+      });
    };
    del(name) {
       // Inizializza proprietà locali:

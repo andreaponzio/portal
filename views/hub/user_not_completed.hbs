@@ -1,0 +1,37 @@
+<style>
+   .local-generic {
+      max-width: 380px;
+      padding: 10px;
+      margin: 6rem auto;
+      font-family: sans-serif;
+      font-size: 13px;
+   }
+   .form-generic {
+      padding: 10px;
+      border: 1px solid #eaecef;
+      border-radius: 5px;
+      background-color: #f6f8fa;
+   }
+</style>
+
+<div class="container local-generic">
+   <form class="form-generic" id="submit" method="post" action="/user_not_completed">
+
+      <!-- Scelta profilo in base alla risposte -->
+      <select class="form-select" name="who" id="who">
+         <option selected>Che utente sei?</option>
+         <option value="1">Non lavoro su SAP</option>
+         <option value="2">Lavoro su SAP e sono un utente finale</option>
+         <option value="3">Lavoro su SAP e faccio parte dell'IT</option>
+      </select>
+      <div class="invalid-feedback" id="who_feedback">E' necessario selezionare una risposta</div>
+
+      <!-- Pulsanti di comando -->
+      <div class="mt-3 d-grid gap-2">
+         <button type="button" class="btn btn-success" id="next">Conferma</button>
+         <a href="/" class="btn btn-warning">Annulla</a>
+      </div>
+   </form>
+</div>
+
+<script src="js/hub/user_not_completed.js"></script>

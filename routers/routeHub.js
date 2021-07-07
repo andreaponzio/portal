@@ -12,9 +12,36 @@ const router = express.Router();
  *&
  *&=================================================================================================================*/
 router.get("/", async(request, response) => {
+   // Inizializza proprietà locali:
+   let profile = undefined;
+   let apps_filter = [];
+   let apps = [];
+
+   // Prepara elenco delle applicazioni associate al profilo:
+   try {
+      profile = new Profile();
+      await profile.open(config.dbname, config.address, config.port);
+      await profile.load(request.session.userdata.profile);
+      profile.applications.forEach(app => {
+         apps_filter.push(app.name);
+      });
+      apps = await profile._find(
+         "applications",
+         { "name": { "$in": apps_filter } },
+         { "sortid": 1 });
+   }
+   catch(ex) {
+      response.send(ex);
+   }
+   finally {
+      await profile.close();
+      profile = undefined;
+   }
+
    // Render della pagina dell'HUB:
    response.render("hub/entry", {
       "title": "Il Portale dell'Utente",
+      "apps": apps,
       "alert-success": request.flash("alert-success"),
       "alert-warning": request.flash("alert-warning"),
       "alert-danger": request.flash("alert-danger")
@@ -38,7 +65,7 @@ router.post("/login", async(request, response) => {
       if(crypto.compareSync(request.body.password, user.password)) {
 
          // Genera id di sessione:
-         sessionid = await user._getIntervalNextNumber("users", "session-counter");
+         sessionid = await user._getIntervalNextNumber("trace", "session-counter");
 
          // Valorizza dati utente nella sessione:
          profile = new Profile(user.database);
@@ -239,6 +266,51 @@ router.post("/communic-external", async(request, response) => {
       await chat.close();
       chat = undefined;
    }
+});
+
+/*&==================================================================================================================*
+ *&
+ *&=================================================================================================================*/
+router.get("/user_not_completed", async(request, response) => {
+   // Render della pagina dell'HUB:
+   response.render("hub/user_not_completed", {
+      "title": "Completa la registrazione"
+   });
+});
+router.post("/user_not_completed", async(request, response) => {
+   // Inizializza proprietà locali:
+   let user = undefined;
+
+   // In base alla scelta dell'utente, assegna il profilo:
+   try {
+      user = new User();
+      await user.open(config.dbname, config.address, config.port);
+      await user.load(request.session.userdata.email);
+      switch(request.body.who) {
+         case "1":
+            user.profile = "user_not_completed";
+            break;
+
+         case "2":
+            user.profile = "user_not_completed";
+            break;
+
+         case "3":
+            user.profile = "administrator";
+            break;
+      }
+      await user.save();
+   }
+   catch(ex) {
+      response.send(ex);
+   }
+   finally {
+      await user.close();
+      user = undefined;
+   }
+
+   // L'utente deve rifare il login:
+   response.redirect("/logoff");
 });
 
 /*&==================================================================================================================*
