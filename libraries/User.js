@@ -52,7 +52,7 @@ class User extends Base {
       this.#user.profile = value || undefined;
    };
    set locked(value) {
-      this.#user.locked = value || undefined;
+      this.#user.locked = value || false;
    };
 
    // Metodi:
@@ -120,7 +120,7 @@ class User extends Base {
       // fisicamente:
       switch(physical_deletion) {
          case true:
-            await super._remove("users", {"_id": this.#user.email});
+            await super._remove("users", {"_id": this.#user._id});
             break;
 
          case false:

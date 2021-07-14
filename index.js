@@ -9,6 +9,7 @@ const middleware = require("./middleware");
 const routeHub = require("./routers/routeHub");
 const routeSetup = require("./routers/routeSetup");
 const routeChat = require("./routers/routeChat");
+const routeAdministrator = require("./routers/routeAdministrator");
 
 const port = require("./public/config.json").server.port;
 
@@ -63,6 +64,7 @@ app.all("*", function(request, response, next) {
 app.use("/", middleware.Authentication, routeHub);
 app.use("/setup", middleware.Authentication, routeSetup);
 app.use("/chat", middleware.Authentication, routeChat);
+app.use("/administrator", middleware.Authentication, routeAdministrator);
 
 /*&==================================================================================================================*
  *& Avvia il server

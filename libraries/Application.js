@@ -11,16 +11,13 @@ class Application extends Base {
 
    // Get delle proprietà dell'applicazione:
    get name() {
-      return this.#application.name;
+      return this.#application._id;
    };
    get title() {
       return this.#application.title;
    };
    get description() {
       return this.#application.description;
-   };
-   get image() {
-      return this.#application.image;
    };
    get sortid() {
       return this.#application.sortid;
@@ -42,14 +39,11 @@ class Application extends Base {
    set description(value) {
       this.#application.description = value || undefined;
    };
-   set image(value) {
-      this.#application.image = value || undefined;
-   };
    set sortid(value) {
-      this.#application.sortid = value || undefined;
+      this.#application.sortid = value || 0;
    };
    set locked(value) {
-      this.#application.locked = value || undefined;
+      this.#application.locked = value || false;
    };
 
    // Metodi:
@@ -79,7 +73,7 @@ class Application extends Base {
       // Inizializza documento (da usare anche per il riutilizzo dell'istanza della classe):
       this.#application = {};
       this.#application.type = "application";
-      this.#application.name = name;
+      this.#application._id = name;
       this.#application.sortid = 0;
       this.#application.locked = false;
    };
@@ -92,7 +86,7 @@ class Application extends Base {
          throw this.invalid_property;
 
       // Legge dalla collezione il documento:
-      documents = await super._load("applications", {"_id": name});
+      documents = await super._load("applications", { "_id": name });
       if(documents.length === 0)
          throw this.not_found;
 
@@ -110,14 +104,14 @@ class Application extends Base {
          this.#application.changed_at = new Date();
 
       // Registra documento:
-      await super._save("applications", this.#application.name, this.#application);
+      await super._save("applications", this.#application._id, this.#application);
    }
    async remove(physical_deletion = false) {
       // In base al valore del parametro il documento viene semplicemente bloccato oppure cancellato
       // fisicamente:
       switch(physical_deletion) {
          case true:
-            await super._remove("applications", {"_id": this.#application.name});
+            await super._remove("applications", {"_id": this.#application._id});
             break;
 
          case false:

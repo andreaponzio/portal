@@ -27,7 +27,7 @@ router.get("/", async(request, response) => {
       });
       apps = await profile._find(
          "applications",
-         { "name": { "$in": apps_filter } },
+         { "_id": { "$in": apps_filter } },
          { "sortid": 1 });
    }
    catch(ex) {
@@ -37,6 +37,9 @@ router.get("/", async(request, response) => {
       await profile.close();
       profile = undefined;
    }
+
+   // Pulisce alcuni elementi della sessione:
+   delete request.session.app;
 
    // Render della pagina dell'HUB:
    response.render("hub/entry", {

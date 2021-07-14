@@ -1,0 +1,109 @@
+<style>
+   .local-generic {
+      max-width: 450px;
+      padding: 10px;
+      margin: 4rem auto;
+      font-family: sans-serif;
+      font-size: 13px;
+   }
+
+   .frame-color {
+      padding: 10px;
+      border: 1px solid #eaecef;
+      border-radius: 5px;
+      background-color: #f6f8fa;
+   }
+</style>
+
+<div class="container local-generic">
+
+   <!-- Titolo -->
+   <div class="text-center">
+      <h1>Profilo</h1>
+   </div>
+
+   <!-- Form -->
+   <form id="submit" method="post" action="/administrator/profile_edit">
+      <input type="text" name="_method" id="_method" hidden>
+      <input type="text" name="_locked" id="_locked" hidden>
+      <input type="text" name="_admin" id="_admin" hidden>
+      <input type="text" name="_new" id="_new" hidden>
+      <input type="text" name="_counter" id="_counter" value="{{_counter}}" hidden>
+
+      <!-- Profilo ID -->
+      <div class="form-group frame-color">
+         <label for="_id" class="fw-bold">ID</label>
+         {{#if data._id}}
+            <input class="form-control mt-1" type="text" name="_id" id="_id"
+                   value="{{data._id}}"
+                   readonly>
+         {{else}}
+            <input class="form-control mt-1" type="text" name="_id" id="_id" maxlength="20" required>
+         {{/if}}
+         <div class="invalid-feedback" id="_id_feedback"></div>
+      </div>
+
+      <!-- Descrizione -->
+      <div class="form-group frame-color">
+         <label for="description" class="fw-bold">Descrizione</label>
+         <input class="form-control mt-1" type="text" name="description" id="description" maxlength="60"
+                value="{{data.description}}" required>
+         <div class="invalid-feedback" id="description-feedback">Specificare una descrizione</div>
+      </div>
+
+      <!-- Amministrativo & Locked -->
+      <div class="form-group frame-color mt-3">
+         <label for="admin" class="fw-bold">Tipo profilo</label>
+         <select class="form-select mt-1" name="admin" id="admin">
+            {{#if data.admin}}
+               <option value="1">Generico</option>
+               <option value="2" selected>Amministrativo</option>
+            {{else}}
+               <option value="1" selected>Generico</option>
+               <option value="2">Amministrativo</option>
+            {{/if}}
+         </select>
+
+         <label for="locked" class="fw-bold mt-3">Stato</label>
+         <select class="form-select" name="locked" id="locked">
+            {{#if data.locked}}
+               <option value="1">Non bloccato</option>
+               <option value="2" selected>Bloccato</option>
+            {{else}}
+               <option value="1" selected>Non bloccato</option>
+               <option value="2">Bloccato</option>
+            {{/if}}
+         </select>
+      </div>
+
+      <!-- Applicazioni assegnate -->
+      <h6 class="text-center fw-bold mt-3">Applicazioni assegnate</h6>
+      <div class="form-group frame-color mt-1">
+         {{#each apps}}
+            <div class="form-check form-switch">
+               {{#if this.assigned}}
+                  <input type="checkbox" class="form-check-input id="{{this.appid}}" name="{{this.appid}}"
+                                                                                   checked>
+               {{else}}
+                  <input type="checkbox" class="form-check-input" id="{{this.appid}}" name="{{this.appid}}">
+               {{/if}}
+               <label class="form-check-label" for="{{this.appid}}">{{this.title}}</label>
+            </div>
+         {{/each}}
+      </div>
+
+      <!-- Pulsanti di comando -->
+      <div class="mt-3 d-grid gap-2">
+         <button type="button" class="btn btn-success" id="next">Procedi</button>
+         {{#if data._id}}
+            <button type="button" class="btn btn-danger" id="remove">Elimina</button>
+         {{/if}}
+         <a href="/administrator" class="btn btn-warning">Annulla</a>
+      </div>
+   </form>
+
+   <!-- Eventuali messaggi -->
+   {{> message}}
+</div>
+
+<script src="/js/administrator/profile_edit.js"></script>

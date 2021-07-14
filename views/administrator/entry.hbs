@@ -1,0 +1,184 @@
+<style>
+   .local-generic {
+      padding: 10px;
+      margin: 3.5rem auto;
+      font-family: sans-serif;
+      font-size: 13px;
+   }
+   .frame-color {
+      padding: 10px;
+      border: 1px solid #eaecef;
+      border-radius: 5px;
+      background-color: #f6f8fa;
+   }
+   .link {
+      text-decoration: none;
+   }
+</style>
+
+<!-- Amministrazione -->
+<div class="container-fluid local-generic">
+   <div class="frame-color text-center">
+      <form class="form-generic" id="submit" method="post" action="/administrator">
+         <input type="text" name="_id" id="_id" value="applications" hidden>
+         <div class="btn-group btn-group-sm" id="btn-group" role="group">
+            {{#compare id '==' 1}}
+               <input type="radio" class="btn-check" name="btnradio" id="1" autocomplete="off" checked>
+            {{else}}
+               <input type="radio" class="btn-check" name="btnradio" id="1" autocomplete="off">
+            {{/compare}}
+            <label class="btn btn-outline-primary" for="1">Applicazioni</label>
+
+            {{#compare id '==' 2}}
+               <input type="radio" class="btn-check" name="btnradio" id="2" autocomplete="off" checked>
+            {{else}}
+               <input type="radio" class="btn-check" name="btnradio" id="2" autocomplete="off">
+            {{/compare}}
+            <label class="btn btn-outline-primary" for="2">Profili</label>
+
+            {{#compare id '==' 3}}
+               <input type="radio" class="btn-check" name="btnradio" id="3" autocomplete="off" checked>
+            {{else}}
+               <input type="radio" class="btn-check" name="btnradio" id="3" autocomplete="off">
+            {{/compare}}
+            <label class="btn btn-outline-primary" for="3">Utenti</label>
+
+            {{#compare id '==' 4}}
+               <input type="radio" class="btn-check" name="btnradio" id="4" autocomplete="off" checked>
+            {{else}}
+               <input type="radio" class="btn-check" name="btnradio" id="4" autocomplete="off">
+            {{/compare}}
+            <label class="btn btn-outline-primary" for="4">SAP</label>
+         </div>
+      </form>
+   </div>
+
+   <!-- Tabelle dati -->
+   {{#compare id '==' 1}}
+      <div class="text-center p-2">
+         <a href="administrator/application_edit" type="button" class="btn btn-success btn-sm">Nuova applicazione</a>
+      </div>
+      <table class="table table-striped">
+         <thead>
+            <tr>
+               <th scope="col">Applicazione</th>
+               <th scope="col">Titolo</th>
+               <th scope="col">Descrizione</th>
+               <th scope="col">Posizione</th>
+               <th scope="col">Stato</th>
+               <th scope="col">Ultima modifica</th>
+            </tr>
+         </thead>
+         <tbody>
+            {{#each data}}
+               <tr>
+                  <th scope="row">
+                     <a href="/administrator/application_edit?id={{this._id}}" class="btn btn-link link" id="{{this._id}}">{{this._id}}</a>
+                  </th>
+                  <td>{{this.title}}</td>
+                  <td>{{this.description}}</td>
+                  <td>{{this.sortid}}</td>
+                  <td>
+                     {{#if this.locked}}
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-lock" viewBox="0 0 16 16">
+                           <path d="M8 1a2 2 0 0 1 2 2v4H6V3a2 2 0 0 1 2-2zm3 6V3a3 3 0 0 0-6 0v4a2 2 0 0 0-2 2v5a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2zM5 8h6a1 1 0 0 1 1 1v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V9a1 1 0 0 1 1-1z"/>
+                        </svg>
+                     {{else}}
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-unlock" viewBox="0 0 16 16">
+                           <path d="M11 1a2 2 0 0 0-2 2v4a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V9a2 2 0 0 1 2-2h5V3a3 3 0 0 1 6 0v4a.5.5 0 0 1-1 0V3a2 2 0 0 0-2-2zM3 8a1 1 0 0 0-1 1v5a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V9a1 1 0 0 0-1-1H3z"/>
+                        </svg>
+                     {{/if}}
+                  </td>
+                  <td>{{this.changed_at}}</td>
+               </tr>
+            {{/each}}
+         </tbody>
+      </table>
+   {{/compare}}
+
+   {{#compare id '==' 2}}
+      <div class="text-center p-2">
+         <a href="administrator/profile_edit" type="button" class="btn btn-success btn-sm">Nuovo profilo</a>
+      </div>
+      <table class="table table-striped">
+         <thead>
+         <tr>
+            <th scope="col">Profilo</th>
+            <th scope="col">Descrizione</th>
+            <th scope="col">Stato</th>
+            <th scope="col">Ultima modifica</th>
+         </tr>
+         </thead>
+         <tbody>
+            {{#each data}}
+               <tr>
+                  <th scope="row">
+                     <a href="/administrator/profile_edit?id={{this._id}}" class="btn btn-link link" id="{{this._id}}">{{this._id}}</a>
+                  </th>
+                  <td>{{this.description}}</td>
+                  <td>
+                     {{#if this.locked}}
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-lock" viewBox="0 0 16 16">
+                           <path d="M8 1a2 2 0 0 1 2 2v4H6V3a2 2 0 0 1 2-2zm3 6V3a3 3 0 0 0-6 0v4a2 2 0 0 0-2 2v5a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2zM5 8h6a1 1 0 0 1 1 1v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V9a1 1 0 0 1 1-1z"/>
+                        </svg>
+                     {{else}}
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-unlock" viewBox="0 0 16 16">
+                           <path d="M11 1a2 2 0 0 0-2 2v4a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V9a2 2 0 0 1 2-2h5V3a3 3 0 0 1 6 0v4a.5.5 0 0 1-1 0V3a2 2 0 0 0-2-2zM3 8a1 1 0 0 0-1 1v5a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V9a1 1 0 0 0-1-1H3z"/>
+                        </svg>
+                     {{/if}}
+                  </td>
+                  <td>{{this.changed_at}}</td>
+               </tr>
+            {{/each}}
+         </tbody>
+      </table>
+   {{/compare}}
+
+   {{#compare id '==' 3}}
+      <div class="text-center p-2">
+         <a href="administrator/user_edit" type="button" class="btn btn-success btn-sm">Nuova registrazione</a>
+      </div>
+      <table class="table table-striped">
+         <thead>
+         <tr>
+            <th scope="col">e-mail</th>
+            <th scope="col">Nome</th>
+            <th scope="col">Profilo</th>
+            <th scope="col">Stato</th>
+            <th scope="col">Ultima modifica</th>
+         </tr>
+         </thead>
+         <tbody>
+            {{#each data}}
+               <tr>
+                  <th scope="row">
+                     <a href="/administrator/user_edit?id={{this._id}}" class="btn btn-link link" id="{{this._id}}">{{this._id}}</a>
+                  </th>
+                  <td>{{this.name}}</td>
+                  <td>
+                     <a href="/administrator/profile_edit?id={{this.profile}}" class="btn btn-link link" id="{{this.profile}}">{{this.profile}}</a>
+                  </td>
+                  <td>
+                     {{#if this.locked}}
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-lock" viewBox="0 0 16 16">
+                           <path d="M8 1a2 2 0 0 1 2 2v4H6V3a2 2 0 0 1 2-2zm3 6V3a3 3 0 0 0-6 0v4a2 2 0 0 0-2 2v5a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2zM5 8h6a1 1 0 0 1 1 1v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V9a1 1 0 0 1 1-1z"/>
+                        </svg>
+                     {{else}}
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-unlock" viewBox="0 0 16 16">
+                           <path d="M11 1a2 2 0 0 0-2 2v4a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V9a2 2 0 0 1 2-2h5V3a3 3 0 0 1 6 0v4a.5.5 0 0 1-1 0V3a2 2 0 0 0-2-2zM3 8a1 1 0 0 0-1 1v5a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V9a1 1 0 0 0-1-1H3z"/>
+                        </svg>
+                     {{/if}}
+                  </td>
+                  <td>{{this.changed_at}}</td>
+               </tr>
+            {{/each}}
+         </tbody>
+      </table>
+   {{/compare}}
+
+   {{#compare id '==' 4}}
+      <h1>table</h1>
+   {{/compare}}
+</div>
+
+<script src="js/administrator/entry.js"></script>

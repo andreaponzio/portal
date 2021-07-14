@@ -11,7 +11,7 @@ class Profile extends Base {
 
    // Get delle proprietà del profilo:
    get name() {
-      return this.#profile.name;
+      return this.#profile._id;
    };
    get description() {
       return this.#profile.description;
@@ -40,7 +40,7 @@ class Profile extends Base {
       this.#profile.admin = value || undefined;
    };
    set locked(value) {
-      this.#profile.locked = value || undefined;
+      this.#profile.locked = value || false;
    };
 
    // Metodi:
@@ -68,7 +68,7 @@ class Profile extends Base {
       // Inizializza documento (da usare anche per il riutilizzo dell'istanza della classe):
       this.#profile = {};
       this.#profile.type = "profile";
-      this.#profile.name = name;
+      this.#profile._id = name;
       this.#profile.admin = false;
       this.#profile.locked = false;
    };
@@ -99,14 +99,14 @@ class Profile extends Base {
          this.#profile.changed_at = new Date();
 
       // Registra documento:
-      await super._save("profiles", this.#profile.name, this.#profile);
+      await super._save("profiles", this.#profile._id, this.#profile);
    }
    async remove(physical_deletion = false) {
       // In base al valore del parametro il documento viene semplicemente bloccato oppure cancellato
       // fisicamente:
       switch(physical_deletion) {
          case true:
-            await super._remove("profiles", {"_id": this.#profile.name});
+            await super._remove("profiles", {"_id": this.#profile._id});
             break;
 
          case false:
@@ -140,7 +140,7 @@ class Profile extends Base {
       if(this.#profile.applications === undefined)
          this.#profile.applications = [];
       this.#profile.applications.push({
-         "name": documents[0].name
+         "name": documents[0]._id
       });
    };
    del(name) {

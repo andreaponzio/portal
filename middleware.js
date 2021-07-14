@@ -23,7 +23,7 @@ Authentication = (request, response, next) => {
       });
    else
       next();
-}
+};
 
 /**
  * Esporta modulo.

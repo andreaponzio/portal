@@ -1,0 +1,1 @@
+//TODO: aggiungere nel profilo la gestione della applicazioni

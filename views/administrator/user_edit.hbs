@@ -1,0 +1,121 @@
+<style>
+   .local-generic {
+      max-width: 450px;
+      padding: 10px;
+      margin: 4rem auto;
+      font-family: sans-serif;
+      font-size: 13px;
+   }
+
+   .frame-color {
+      padding: 10px;
+      border: 1px solid #eaecef;
+      border-radius: 5px;
+      background-color: #f6f8fa;
+   }
+</style>
+
+<div class="container local-generic">
+
+   <!-- Titolo -->
+   <div class="text-center">
+      <h1>Registrazione utente</h1>
+   </div>
+
+   <!-- Form -->
+   <form id="submit" method="post" action="/administrator/user_edit">
+      <input type="text" name="_method" id="_method" hidden>
+      <input type="text" name="_profileid" id="_profileid" hidden>
+      <input type="text" name="_locked" id="_locked" hidden>
+      <input type="text" name="_new" id="_new" hidden>
+      <input type="text" name="_counter" id="_counter" value="{{_counter}}" hidden>
+
+      <!-- Profilo ID -->
+      <div class="form-group frame-color">
+         <label for="locked" class="fw-bold mt-3">Profilo</label>
+         <select class="form-select" name="profileid" id="profileid">
+            {{#each profile}}
+               {{#compare this.id '==' ../data.profileid}}
+                  <option value="{{this.id}}" selected>{{this.description}}</option>
+               {{else}}
+                  <option value="{{this.id}}">{{this.description}}</option>
+               {{/compare}}
+            {{/each}}
+         </select>
+      </div>
+
+      <!-- e-mail & Nome utente-->
+      <div class="form-group frame-color mt-3">
+         <div>
+            <label for="email" class="fw-bold">Indirizzo e-mail</label>
+            {{#if data.email}}
+               <input class="form-control mt-1" type="email" name="email" id="email" placeholder="nome@example.com" value="{{data.email}}" readonly>
+            {{else}}
+               <input class="form-control mt-1" type="email" name="email" id="email" placeholder="nome@example.com" value="{{data.email}}" required>
+            {{/if}}
+            <div class="invalid-feedback">E' necessario inserire un indirizzo e-mail valido</div>
+         </div>
+         <div class="mt-3">
+            <label for="name" class="fw-bold">Nome utente</label>
+            <input type="text" class="form-control mt-1" name="name" id="name" maxlength="30" value="{{data.name}}" required>
+            <div class="invalid-feedback">E' necessario specificare un nome utente (massimo 30 caratteri)</div>
+         </div>
+      </div>
+
+      <!-- Password -->
+      <div class="form-group frame-color mt-3">
+         <div>
+            <label for="password" class="fw-bold">Password</label>
+            <input type="password" class="form-control mt-1" name="password" id="password" maxlength="20" required>
+            <div class="invalid-feedback">E' necessario specificare una password (minimo 8 caratteri)</div>
+         </div>
+         <div class="mt-3">
+            <label for="repassword" class="fw-bold">Ripeti password</label>
+            <input type="password" class="form-control mt-1" name="repassword" id="repassword" maxlength="20" required>
+            <div class="invalid-feedback">Le password non corrispondono</div>
+         </div>
+      </div>
+
+      <!-- Frase di sicurezza -->
+      <div class="form-group frame-color mt-3">
+         <div>
+            <label for="security" class="fw-bold">Frase di sicurezza</label>
+            <input type="password" class="form-control mt-1" name="security" id="security" maxlength="30" required>
+            <div class="invalid-feedback">E' necessario specificare una frase di sicurezza (minimo 10 car., massimo 30)</div>
+         </div>
+         <div class="mt-3">
+            <label for="resecurity" class="fw-bold">Ripeti frase di sicurezza</label>
+            <input type="password" class="form-control mt-1" name="resecurity" id="resecurity" maxlength="30" required>
+            <div class="invalid-feedback">Le frasi di sicurezza non corrispondono</div>
+         </div>
+      </div>
+
+      <!-- Locked -->
+      <div class="form-group frame-color mt-3">
+         <label for="locked" class="fw-bold">Stato</label>
+         <select class="form-select" name="locked" id="locked">
+            {{#if data.locked}}
+               <option value="1">Non bloccato</option>
+               <option value="2" selected>Bloccato</option>
+            {{else}}
+               <option value="1" selected>Non bloccato</option>
+               <option value="2">Bloccato</option>
+            {{/if}}
+         </select>
+      </div>
+
+      <!-- Pulsanti di comando -->
+      <div class="mt-3 d-grid gap-2">
+         <button type="button" class="btn btn-success" id="next">Procedi</button>
+         {{#if data.email}}
+            <button type="button" class="btn btn-danger" id="remove">Elimina</button>
+         {{/if}}
+         <a href="/administrator" class="btn btn-warning">Annulla</a>
+      </div>
+   </form>
+
+   <!-- Eventuali messaggi -->
+   {{> message}}
+</div>
+
+<script src="/js/administrator/user_edit.js"></script>

@@ -37,7 +37,7 @@ class Chat extends Base {
 
    // Set delle proprietà della chat:
    set locked(value) {
-      this.#chat.locked = value || undefined;
+      this.#chat.locked = value || false;
    };
    set external(value) {
       this.#chat.external = value || undefined;
