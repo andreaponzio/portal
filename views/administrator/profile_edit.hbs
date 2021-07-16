@@ -81,13 +81,9 @@
       <div class="form-group frame-color mt-1">
          {{#each apps}}
             <div class="form-check form-switch">
-               {{#if this.assigned}}
-                  <input type="checkbox" class="form-check-input id="{{this.appid}}" name="{{this.appid}}"
-                                                                                   checked>
-               {{else}}
-                  <input type="checkbox" class="form-check-input" id="{{this.appid}}" name="{{this.appid}}">
-               {{/if}}
-               <label class="form-check-label" for="{{this.appid}}">{{this.title}}</label>
+               {{log this.enable}}
+               <input type="checkbox" class="form-check-input id="{{this.id}}" name="{{this.id}}" {{this.enable}}>
+               <label class="form-check-label" for="{{this.id}}">{{this.title}}</label>
             </div>
          {{/each}}
       </div>

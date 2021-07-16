@@ -34,10 +34,10 @@ class Profile extends Base {
 
    // Set delle proprietà del profilo:
    set description(value) {
-      this.#profile.description = value || undefined;
+      this.#profile.description = value || "<<undefined>>";
    };
    set admin(value) {
-      this.#profile.admin = value || undefined;
+      this.#profile.admin = value || false;
    };
    set locked(value) {
       this.#profile.locked = value || false;
@@ -153,6 +153,10 @@ class Profile extends Base {
          if(index !== -1)
             this.#profile.applications.splice(index, 1);
       }
+   };
+   clean() {
+      // Elimina tutte le applicazioni assegnate:
+      this.#profile.applications = [];
    };
 }
 

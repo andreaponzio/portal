@@ -51,7 +51,7 @@ router.get("/application_edit", async(request, response) => {
    let documents = [];
    let data = {};
 
-   // Legga applicazione se si tratta di una modifica:
+   // Prepara valori da passare alla pagina:
    try {
       if(request.query.id !== undefined) {
          application = new Application();
@@ -188,12 +188,17 @@ router.delete("/application_edit", async(request, response) => {
 router.get("/profile_edit", async(request, response) => {
    // Inizializza proprietà locali:
    let profile = undefined;
+   let application = undefined;
    let documents = [];
+   let apps = [];
    let data = {};
+   let index = -1;
 
-   // Legga applicazione se si tratta di una modifica:
+   // Prepara valori da passare alla pagina:
    try {
       if(request.query.id !== undefined) {
+
+         // Legge profilo:
          profile = new Profile();
          await profile.open(config.dbname, config.address, config.port);
          documents = await profile.load(request.query.id);
@@ -203,6 +208,24 @@ router.get("/profile_edit", async(request, response) => {
             "admin": profile.admin,
             "locked": profile.locked
          };
+
+         // Prepara elenco applicazioni ammesse nel profilo:
+         application = new Application(profile.database);
+         documents = await application.find();
+         documents.forEach(app => {
+            if(profile.applications !== undefined)
+               apps.push({
+                  "id": app._id,
+                  "title": app.title,
+                  "enable": profile.applications.findIndex(a => a.name === app._id) !== -1 ? "checked" : ""
+               });
+            else
+               apps.push({
+                  "id": app._id,
+                  "title": app.title,
+                  "enable": ""
+               });
+         });
       }
    }
    catch(ex) {
@@ -212,6 +235,7 @@ router.get("/profile_edit", async(request, response) => {
       if(request.query.id !== undefined) {
          await profile.close();
          profile = undefined;
+         application = undefined;
       }
    }
 
@@ -219,12 +243,14 @@ router.get("/profile_edit", async(request, response) => {
    response.render("administrator/profile_edit", {
       "title": "Amministrazione - Profilo",
       "data": data,
+      "apps": apps,
       "alert-danger": request.flash("alert-danger")
    });
 });
 router.post("/profile_edit", async(request, response) => {
    // Inizializza proprietà locali:
    let profile = undefined;
+   let application = undefined;
    let documents = [];
    let data = {};
    let new_app = false;
@@ -248,6 +274,8 @@ router.post("/profile_edit", async(request, response) => {
                "alert-danger": request.flash("alert-danger")
             });
          }
+
+         // Nuovo profilo:
          else {
             await profile.new(request.body._id);
             profile.description = request.body.description;
@@ -256,11 +284,23 @@ router.post("/profile_edit", async(request, response) => {
             await profile.save();
          }
       }
+
+      // Aggiorna profilo ed applicazioni assegnate:
       else {
          await profile.load(request.body._id);
          profile.description = request.body.description;
          profile.admin = request.body._admin === "1" ? false : true;
          profile.locked = request.body._locked === "1" ? false : true;
+
+         profile.clean();
+         application = new Application(profile.database);
+         documents = await application.find();
+         for(let i = 0; i < documents.length; i++) {
+            if(request.body[documents[i]._id] === "on")
+               await profile.add(documents[i]._id);
+            else
+               profile.del(documents[i]._id);
+         }
          await profile.save();
       }
    }
